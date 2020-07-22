@@ -41,55 +41,63 @@ class Piece  {
         char name(){
             return c;
         }
-        virtual bool canMove(pair<int, int> start, pair<int, int> end) = 0;
+        virtual bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end) = 0;
 };
 class Pawn : public Piece{
     public :
         Pawn(bool is_white):Piece(is_white, 'p'){};
-        bool canMove(pair<int,int> start, pair<int, int> end){
-            return true;
+        bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
+            Piece *p = boxes[end.first][end.second];
+            if(start.second == end.second){
+                if(end.first - start.first == (is_white?2:-2) and p == NULL and start.first == (is_white?1:6) and boxes[start.first + (is_white?1:-1)][end.second] == NULL)return 1;
+                else if(end.first - start.first == (is_white?1:-1) and p == NULL)return 1;
+                else return 0;
+            }
+            if(abs(start.second - start.first) == 1 and end.first - start.first == (is_white?1:-1) and p != NULL)return 1;
+            return 0;
         }
 };
 class Rook : public Piece{
     public :
         Rook(bool is_white):Piece(is_white, 'r'){};
-        bool canMove(pair<int,int> start, pair<int, int> end){
+        bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
             return true;
         }
 };
 class Bishop : public Piece{
     public :
         Bishop(bool is_white):Piece(is_white, 'b'){};
-        bool canMove(pair<int,int> start, pair<int, int> end){
+        bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
             return true;
         }
 };
 class King : public Piece{
     public :
         King(bool is_white):Piece(is_white, 'K'){};
-        bool canMove(pair<int,int> start, pair<int, int> end){
+        bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
             return true;
         }
 };
 class Queen : public Piece{
     public :
         Queen(bool is_white):Piece(is_white, 'q'){};
-        bool canMove(pair<int,int> start, pair<int, int> end){
+        bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
             return true;
         }
 };
 class Knight : public Piece{
     public :
         Knight(bool is_white):Piece(is_white, 'k'){};
-        bool canMove(pair<int,int> start, pair<int, int> end){
+        bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
             return true;
         }
 };
 class Board {
     private :
-        Piece *boxes[8][8];
+        vector<vector<Piece *> >boxes;
     public :
         Board(){
+            boxes.resize(8, vector<Piece*>(8));
             for(int i = 0; i < 8; i++){
                 boxes[1][i] = new Pawn(1);
                 boxes[6][i] = new Pawn(0);
@@ -126,12 +134,12 @@ class Board {
                 cout << endl;
             }
         }
-        bool move(pair<int, int> start, pair<int, int> end){
-            if(boxes[start.first][start.second] == NULL)return 0;
-            if(boxes[end.first][end.second] != NULL and (*boxes[start.first][start.second]).colour() == (*boxes[end.first][end.second]).colour())return 0;
-            if((*boxes[start.first][start.second]).canMove(start, end))
-            boxes[end.first][end.second] = boxes[start.first][start.second];
-            boxes[start.first][start.second] = NULL;
+        Piece* cellPtr(int i, int j){
+            return boxes[i][j];
+        }
+        vector<vector<Piece *> > allCells(){return boxes;}
+        void set(int i, int j, Piece * p){
+            boxes[i][j] = p;
         }
 };
 class Game{
@@ -150,12 +158,23 @@ class Game{
             start.first--, start.second--, end.first--, end.second--;
             return 1;
         }
-        void move(){
-            b.move(start, end);
+        bool move(){
+            Piece * starting_piece = b.cellPtr(start.first, start.second), * ending_piece = b.cellPtr(end.first, end.second);
+            if(starting_piece == NULL || (*starting_piece).colour() == turn)return 0;
+            if(ending_piece != NULL and (*starting_piece).colour() == (*ending_piece).colour())return 0;
+            if((*starting_piece).canMove(b.allCells(), start, end) == 0)return 0;
+            b.set(end.first, end.second, starting_piece);
+            b.set(start.first, start.second, NULL);
+            turn = (turn+1)%2;
         }
         void play(){
             show();
-            while(getMove())move(), show();
+            cout << "First Move?\n";
+            while(getMove()){
+                bool x = move();
+                if(x)cout << "Next Move?\n", show();
+                else cout << "Invalid Move! Think again.\n";
+            }
         }
 };
 int main(){
