@@ -13,13 +13,6 @@ void ColorPrint(const char text, int fg_color, int bg_color)
 }
 class Board;
 class Box;
-class Piece;
-class Pawn;
-class Bishop;
-class Knight;
-class King;
-class Queen;
-class Rook;
 class Piece  {
     public :
         bool is_killed = false; 
@@ -53,7 +46,7 @@ class Pawn : public Piece{
                 else if(end.first - start.first == (is_white?1:-1) and p == NULL)return 1;
                 else return 0;
             }
-            if(abs(start.second - start.first) == 1 and end.first - start.first == (is_white?1:-1) and p != NULL)return 1;
+            if(abs(start.second - end.second) == 1 and end.first - start.first == (is_white?1:-1) and p != NULL)return 1;
             return 0;
         }
 };
