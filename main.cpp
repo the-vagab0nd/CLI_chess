@@ -21,11 +21,10 @@ class King;
 class Queen;
 class Rook;
 class Piece  {
-    private : 
+    public :
         bool is_killed = false; 
         bool is_white = false;
         char c;
-    public :
         Piece(bool is_white, char c){
             this->is_white = is_white;
             this->c = c;
@@ -42,128 +41,124 @@ class Piece  {
         char name(){
             return c;
         }
-        virtual bool canMove(Board *board, Box *start, Box *end) = 0;
-};
-class Box {
-    private :
-        Piece *piece;
-        int x, y;
-    public :
-        Box(){
-            this->x = 0;
-            this->y = 0;
-            piece = NULL;
-        }
-        Box(int x, int y, Piece *piece){
-            this -> x = x;
-            this -> y = y;
-            this -> piece = piece;
-        }
-        void setPiece(Piece *piece){
-            this -> piece = piece;
-        }
-        char name(){
-            return ((*(this->piece)).name());
-        }
-        bool isEmpty(){return piece == NULL;}
-        void setX(int x){this->x = x;}
-        void setY(int y){this->x = y;}
-        bool isWhite(){
-            return ((*(this->piece)).colour());
-        }
+        virtual bool canMove(pair<int, int> start, pair<int, int> end) = 0;
 };
 class Pawn : public Piece{
     public :
         Pawn(bool is_white):Piece(is_white, 'p'){};
-        bool canMove(Board *board, Box *start, Box *end){
+        bool canMove(pair<int,int> start, pair<int, int> end){
             return true;
         }
 };
 class Rook : public Piece{
     public :
         Rook(bool is_white):Piece(is_white, 'r'){};
-        bool canMove(Board *board, Box *start, Box *end){
+        bool canMove(pair<int,int> start, pair<int, int> end){
             return true;
         }
 };
 class Bishop : public Piece{
     public :
         Bishop(bool is_white):Piece(is_white, 'b'){};
-        bool canMove(Board *board, Box *start, Box *end){
+        bool canMove(pair<int,int> start, pair<int, int> end){
             return true;
         }
 };
 class King : public Piece{
     public :
         King(bool is_white):Piece(is_white, 'K'){};
-        bool canMove(Board *board, Box *start, Box *end){
+        bool canMove(pair<int,int> start, pair<int, int> end){
             return true;
         }
 };
 class Queen : public Piece{
     public :
         Queen(bool is_white):Piece(is_white, 'q'){};
-        bool canMove(Board *board, Box *start, Box *end){
+        bool canMove(pair<int,int> start, pair<int, int> end){
             return true;
         }
 };
 class Knight : public Piece{
     public :
         Knight(bool is_white):Piece(is_white, 'k'){};
-        bool canMove(Board *board, Box *start, Box *end){
+        bool canMove(pair<int,int> start, pair<int, int> end){
             return true;
         }
 };
 class Board {
     private :
-        Box boxes[8][8];
+        Piece *boxes[8][8];
     public :
         Board(){
-            Rook r0(0), r1(1);
-            Bishop b0(0), b1(1);
-            Knight k0(0), k1(1);
-            Queen q0(0), q1(1);
-            King K0(0), K1(1);
             for(int i = 0; i < 8; i++){
-                boxes[1][i] = Box(1, i, new Pawn(1));
-                boxes[6][i] = Box(7, i, new Pawn(0));
+                boxes[1][i] = new Pawn(1);
+                boxes[6][i] = new Pawn(0);
             }
             for(int i = 2; i < 6; i++){
-                for(int j = 0; j < 6; j++){
-                    boxes[i][j] = Box(i, j, NULL);
+                for(int j = 0; j < 8; j++){
+                    boxes[i][j] = NULL;
                 }
             }
-            boxes[0][0] = Box(0, 0, new Rook(1));
-            boxes[0][7] = Box(0, 7, new Rook(1));
-            boxes[7][7] = Box(7, 7, new Rook(0));
-            boxes[7][0] = Box(7, 0, new Rook(0));
-            boxes[0][6] = Box(0, 6, new Knight(1));
-            boxes[0][1] = Box(0, 1, new Knight(1));
-            boxes[0][5] = Box(0, 5, new Bishop(1));
-            boxes[0][2] = Box(0, 2, new Bishop(1));
-            boxes[0][3] = Box(0, 3, new Queen(1));
-            boxes[0][4] = Box(0, 4, new King(1));
-            boxes[7][6] = Box(0, 6, new Knight(0));
-            boxes[7][1] = Box(0, 1, new Knight(0));
-            boxes[7][5] = Box(0, 5, new Bishop(0));
-            boxes[7][2] = Box(0, 2, new Bishop(0));
-            boxes[7][3] = Box(0, 3, new Queen(0));
-            boxes[7][4] = Box(0, 4, new King(0));
+            boxes[0][0] = new Rook(1);
+            boxes[0][7] = new Rook(1);
+            boxes[7][7] = new Rook(0);
+            boxes[7][0] = new Rook(0);
+            boxes[0][6] = new Knight(1);
+            boxes[0][1] = new Knight(1);
+            boxes[0][5] = new Bishop(1);
+            boxes[0][2] = new Bishop(1);
+            boxes[0][3] = new Queen(1);
+            boxes[0][4] = new King(1);
+            boxes[7][6] = new Knight(0);
+            boxes[7][1] = new Knight(0);
+            boxes[7][5] = new Bishop(0);
+            boxes[7][2] = new Bishop(0);
+            boxes[7][3] = new Queen(0);
+            boxes[7][4] = new King(0);
         }
         void show(){
             for(int i = 7; i >= 0; i--){
                 for(int j = 0; j <= 7; j++){
-                    if(boxes[i][j].isEmpty())ColorPrint('x', 90, 90), cout << " ";
-                    else if(boxes[i][j].isWhite())cout << boxes[i][j].name() << " ";
-                    else ColorPrint(boxes[i][j].name(), 90, 30), cout << " ";
+                    if(boxes[i][j] == NULL)ColorPrint('x', 90, 90), cout << " ";
+                    else if((*boxes[i][j]).colour())cout << (*boxes[i][j]).name() << " ";
+                    else ColorPrint((*boxes[i][j]).name(), 90, 30), cout << " ";
                 }
                 cout << endl;
             }
         }
-        
+        bool move(pair<int, int> start, pair<int, int> end){
+            if(boxes[start.first][start.second] == NULL)return 0;
+            if(boxes[end.first][end.second] != NULL and (*boxes[start.first][start.second]).colour() == (*boxes[end.first][end.second]).colour())return 0;
+            if((*boxes[start.first][start.second]).canMove(start, end))
+            boxes[end.first][end.second] = boxes[start.first][start.second];
+            boxes[start.first][start.second] = NULL;
+        }
 };
-
+class Game{
+    private :
+        Board b;
+        string pw, pb;
+        int turn;
+        pair<int, int> start, end;
+    public :
+        Game(string pw, string pb){this->pw = pw, this->pb = pb, this->turn = 0;}
+        void show(){b.show();}
+        bool getMove(){
+            cin >> start.second;
+            if(start.second == -1)return 0;
+            cin >> start.first >> end.second >> end.first;
+            start.first--, start.second--, end.first--, end.second--;
+            return 1;
+        }
+        void move(){
+            b.move(start, end);
+        }
+        void play(){
+            show();
+            while(getMove())move(), show();
+        }
+};
 int main(){
-    Board b;
-    b.show();
+    Game b("asd","bsd");
+    b.play();
 };
