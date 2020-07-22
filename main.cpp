@@ -89,7 +89,9 @@ class Knight : public Piece{
     public :
         Knight(bool is_white):Piece(is_white, 'k'){};
         bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
-            return true;
+            int a = abs(start.first - end.first), b = abs(start.second - end.second);
+            if(a == 1 and b == 2 or a == 2 and b == 1)return 1;
+            else return 0;
         }
 };
 class Board {
@@ -166,6 +168,7 @@ class Game{
             b.set(end.first, end.second, starting_piece);
             b.set(start.first, start.second, NULL);
             turn = (turn+1)%2;
+            return 1;
         }
         void play(){
             show();
