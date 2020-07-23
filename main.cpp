@@ -6,7 +6,10 @@ const int sz = 8;
 using namespace std;
 void ColorPrint(const char text, int fg_color, int bg_color)
 {
-    cout << text;
+    static const char begin_sequence[]{0x1B,'[','\0'};
+    static const char reset[]{0x1B,'[','0','m','\0'};
+
+    cout << begin_sequence << fg_color << ';' << bg_color << 'm' << text << reset;
 }
 class Board;
 class Box;
@@ -223,7 +226,7 @@ class Game{
             if(starting_piece == NULL || (*starting_piece).colour() == turn)return 0;
             if(ending_piece != NULL and (*starting_piece).colour() == (*ending_piece).colour())return 0;
             if((*starting_piece).canMove(b.allCells(), start, end) == 0)return 0;
-            if((*starting_piece).name() == 'p' and end.second == 7){
+            if((*starting_piece).name() == 'p' and end.first == 7 || end.first == 0){
                 promotemsg();
                 string s;
                 cin >> s;
