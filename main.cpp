@@ -15,6 +15,7 @@ class Board;
 class Box;
 class Piece  {
     public :
+        bool is_killed = false; 
         bool is_white = false;
         char c;
         Piece(bool is_white, char c){
@@ -23,6 +24,9 @@ class Piece  {
         }
         bool isAlive(){
             return this->is_killed == false;
+        }
+        void setKilled(){
+            is_killed = true;
         }
         bool colour(){
             return this->is_white;
@@ -120,17 +124,16 @@ class King : public Piece{
     public :
         King(bool is_white):Piece(is_white, 'K'){};
         bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
-            vector<vector<int> >arr(8, vector<int>(8, 0));
-            bishopMoves(boxes, start, arr);
-            rookMoves(boxes,start, arr); 
-            return arr[end.first][end.second] > 0;
         }
 };
 class Queen : public Piece{
     public :
         Queen(bool is_white):Piece(is_white, 'q'){};
         bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
-            return true;
+            vector<vector<int> >arr(8, vector<int>(8, 0));
+            bishopMoves(boxes, start, arr);
+            rookMoves(boxes,start, arr); 
+            return arr[end.first][end.second] > 0;
         }
 };
 class Knight : public Piece{
