@@ -6,10 +6,7 @@ const int sz = 8;
 using namespace std;
 void ColorPrint(const char text, int fg_color, int bg_color)
 {
-    static const char begin_sequence[]{0x1B,'[','\0'};
-    static const char reset[]{0x1B,'[','0','m','\0'};
-
-    cout << begin_sequence << fg_color << ';' << bg_color << 'm' << text << reset;
+    cout << text;
 }
 class Board;
 class Box;
