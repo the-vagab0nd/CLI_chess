@@ -15,18 +15,11 @@ class Board;
 class Box;
 class Piece  {
     public :
-        bool is_killed = false; 
         bool is_white = false;
         char c;
         Piece(bool is_white, char c){
             this->is_white = is_white;
             this->c = c;
-        }
-        bool isAlive(){
-            return this->is_killed == false;
-        }
-        void setKilled(){
-            is_killed = true;
         }
         bool colour(){
             return this->is_white;
@@ -114,6 +107,7 @@ class Rook : public Piece{
 class Bishop : public Piece{
     public :
         Bishop(bool is_white):Piece(is_white, 'b'){};
+        
         bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
             vector<vector<int> >arr(8, vector<int>(8, 0));
             bishopMoves(boxes, start, arr);
@@ -124,6 +118,8 @@ class King : public Piece{
     public :
         King(bool is_white):Piece(is_white, 'K'){};
         bool canMove(vector<vector<Piece *> >boxes, pair<int, int> start, pair<int, int> end){
+            int dst = abs(start.first - end.first) + abs(start.second - end.second);
+            if(dst == 1)return 1;
         }
 };
 class Queen : public Piece{
@@ -202,7 +198,7 @@ class Game{
         int turn;
         pair<int, int> start, end;
     public :
-        Game(string pw, string pb){this->players[0] = pw, this->players[1] = pb, this->turn = 0;}
+        Game(string pw, string pb){this->players[0] = pw, this->players[1] = pb, this->turn = 1;}
         void show(){b.show();}
         bool check(int a){
             if(a >= sz || a <0)return 0;
@@ -220,25 +216,79 @@ class Game{
             cout << "Options : Rook \n Knight \n Queen \n Bishop \n";
             cout << "Enter name of piece you want in same case\n";
         }
-        bool move(){
-            if(start == end)return 0;
-            Piece * starting_piece = b.cellPtr(start.first, start.second), * ending_piece = b.cellPtr(end.first, end.second);
-            if(starting_piece == NULL || (*starting_piece).colour() == turn)return 0;
+        bool isValid(pair<int, int> initial, pair<int, int> final, int cur_turn){
+            if(initial == final)return 0;
+            Piece * starting_piece = b.cellPtr(initial.first, initial.second), * ending_piece = b.cellPtr(final.first, final.second);
+            if(starting_piece == NULL || (*starting_piece).colour() != cur_turn)return 0;
             if(ending_piece != NULL and (*starting_piece).colour() == (*ending_piece).colour())return 0;
-            if((*starting_piece).canMove(b.allCells(), start, end) == 0)return 0;
-            if((*starting_piece).name() == 'p' and end.second == 7){
+            if((*starting_piece).canMove(b.allCells(), initial, final) == 0)return 0;
+            return 1;
+        }
+        bool isCausingCheck(pair<int, int> initial, pair<int, int> final, int cur_turn){
+            Board cur = b;
+            Piece * starting_piece = b.cellPtr(initial.first, initial.second);
+            b.set(final.first, final.second, starting_piece);
+            b.set(initial.first, initial.second, NULL);
+            bool ret = isCheck(cur_turn);
+            b = cur;
+            return ret;
+        }
+        bool move(){
+            if(!isValid(start,end, turn) || isCausingCheck(start, end, turn))return 0;
+            Piece * starting_piece = b.cellPtr(start.first, start.second);
+            if((*starting_piece).name() == 'p' and end.first == 7 || end.first == 0){
                 promotemsg();
                 string s;
-                cin >> s;
-                if(s == "Rook")starting_piece = new Rook((*starting_piece).colour());
-                else if(s == "Bishop")starting_piece = new Bishop((*starting_piece).colour());
-                else if(s == "Knight")starting_piece = new Knight((*starting_piece).colour());
-                else if(s == "Queen")starting_piece = new Queen((*starting_piece).colour());
+                next :
+                    cin >> s;
+                    if(s == "Rook")starting_piece = new Rook((*starting_piece).colour());
+                    else if(s == "Bishop")starting_piece = new Bishop((*starting_piece).colour());
+                    else if(s == "Knight")starting_piece = new Knight((*starting_piece).colour());
+                    else if(s == "Queen")starting_piece = new Queen((*starting_piece).colour());
+                    else {cout << "You dumb dumb Man who asked u to play chess on such a tough platform. Enter again!\n";goto next;}
             }
             b.set(end.first, end.second, starting_piece);
             b.set(start.first, start.second, NULL);
             turn = (turn+1)%2;
+            if(isCheck(turn) and isStaleMate(turn)){cout << "CheckMate" << endl;exit(0);}
+            if(isCheck(turn)){b.show();cout << "Check\n";}
+            if(isStaleMate(turn)){
+                b. show();
+                cout << "Draw\n";
+                exit(1);
+            }
             return 1;
+        }
+        bool isStaleMate(bool col){
+            for(int i = 0; i < sz; i++){
+                for(int j = 0; j < sz; j++){
+                    Piece* cur_piece = b.cellPtr(i, j);
+                    if(cur_piece != NULL and (*cur_piece).colour() == col){
+                        for(int x = 0; x < sz; x++){
+                            for(int y = 0; y < sz; y++){
+                                if(isValid({i, j}, {x, y}, col) and isCausingCheck({i, j}, {x, y}, col) == 0){return 0;}
+                            }
+                        }
+                    }
+                }
+            }
+            return 1;
+        }
+        bool isCheck(bool col){
+            for(int i = 0; i < sz; i++){
+                for(int j = 0; j < sz; j++){
+                    Piece* cur_piece = b.cellPtr(i, j);
+                    if(cur_piece != NULL and (*cur_piece).name() == 'K' and (*cur_piece).colour() == col){
+                        for(int x = 0; x < sz; x++){
+                            for(int y = 0; y < sz; y++){
+                                pair<int, int> ini = {x, y}, fni = {i, j};
+                                if(isValid(ini, fni, (col^1))){return 1;}
+                            }
+                        }
+                        return 0;
+                    }
+                }
+            }
         }
         void play(){
             show();
@@ -256,4 +306,13 @@ class Game{
 int main(){
     Game b("asd","bsd");
     b.play();
-};
+}
+/*
+5 2 5 4
+5 7 5 5
+6 1 3 4
+4 7 4 6
+4 1 6 3
+2 8 3 6
+6 3 6 7
+*/
