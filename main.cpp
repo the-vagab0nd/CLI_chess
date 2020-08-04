@@ -174,14 +174,20 @@ class Board {
             boxes[7][4] = new King(0);
         }
         void show(){
+            cout << "    ";
+            for(int i = 1; i < 9; i++)cout << i << " ";cout << endl;
             for(int i = 7; i >= 0; i--){
+                cout << i+1 << "   ";
                 for(int j = 0; j <= 7; j++){
                     if(boxes[i][j] == NULL)ColorPrint('x', 90, 90), cout << " ";
                     else if((*boxes[i][j]).colour())cout << (*boxes[i][j]).name() << " ";
                     else ColorPrint((*boxes[i][j]).name(), 90, 30), cout << " ";
                 }
-                cout << endl;
+                cout << "  " << i + 1 << endl;
             }
+            cout << "    ";
+            for(int i = 1; i <= 8; i++)cout << i << " ";
+            cout << endl;
         }
         Piece* cellPtr(int i, int j){
             return boxes[i][j];
